@@ -3,3 +3,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.object-parent-square {
+ @apply px-4 py-2 bg-slate-400 text-gray-100 rounded inline-block border border-gray-600;
+}
+.object-parent-circle {
+ @apply w-12 h-12 bg-slate-200 rounded-full inline-block border border-gray-100;
+}
+.layer {
+ @apply flex flex-col;
+}
