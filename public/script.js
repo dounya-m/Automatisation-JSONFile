@@ -3,7 +3,7 @@
 const validJson = document.getElementById("valid_json");
 const invalidJson = document.getElementById("invalid_json");
 const jsonInput = document.getElementById("json_input");
-const main = document.getElementById("main");
+const mainElement = document.getElementById("mainEl");
 
 jsonInput.addEventListener("keyup", function (e) {
   //check if there is data first
@@ -16,112 +16,118 @@ jsonInput.addEventListener("keyup", function (e) {
       invalidJson.classList.remove("hidden");
       return;
     }
-    ///////////////////////build dom tree based of json object////////////////////////////////
-    JSONCrack(JSON.parse(this.value));
+    ///////////////////////solve the problem////////////////////////////////
+    const object = JSON.parse(this.value);
+    const tree = jsonToTree(object);
+    //create the tree
+    treeTOhtml(tree);
   }
   //make json valid otherwise
   invalidJson.classList.add("hidden");
   validJson.classList.remove("hidden");
 });
 
-function JSONCrack(obj) {
-  if (typeof obj === "object" && !Array.isArray(obj)) {
-    //create primitives object and onject of objects
-    const primitivesObject = {};
-    const objectOfObjects = {};
-    //seperate primitives and objects
-    for (const key in obj) {
-      if (typeof obj[key] !== "object" || obj[key] === null)
-        primitivesObject[key] = obj[key];
-      else objectOfObjects[key] = obj[key];
-    }
-    //if we don't have primitives
-    if (Object.keys(primitivesObject).length === 0) {
-      if (!document.getElementById("object-parent-circle")) {
-        //remove square if exist
-        if (document.getElementById("object-parent-square"))
-          document.getElementById("object-parent-square").remove();
-        //create circle
-        const circleParent = document.createElement("div");
-        circleParent.setAttribute("id", "object-parent-circle");
-        circleParent.classList.add("object-parent-circle");
-        main.appendChild(circleParent);
+function jsonToTree(object) {
+  // get the chosen data type
+  function getDataType(object, type) {
+    const result = {};
+    for (const key in object) {
+      const element = object[key];
+      if (
+        typeOfElement(element, false) === type &&
+        key !== "parent" &&
+        key !== "type"
+      ) {
+        result[key] = element;
       }
-    } 
-    //if we have primitives
-    else {
-      if (!document.getElementById("object-parent-square")) {
-        //remove circle if exist
-        if (document.getElementById("object-parent-circle"))
-          document.getElementById("object-parent-circle").remove();
-        //create square
-        const squareParent = document.createElement("div");
-        squareParent.setAttribute("id", "object-parent-square");
-        squareParent.classList.add("object-parent-square");
-        main.appendChild(squareParent);
-      }
-      //push primitives to squar
-      const StingOfJson = JSON.stringify(primitivesObject)
-        .replace("{", "")
-        .replace("}", "")
-        .replaceAll('"', "")
-        .replaceAll(",", "</br>")
-        .replaceAll(":", " :  ");
-      document.getElementById("object-parent-square").innerHTML = StingOfJson;
     }
-    //if we have objects inside our object
-    if(Object.keys(objectOfObjects).length > 0) LoopThoughtObjects(objectOfObjects);
+    if (!Object.keys(result).length) return false;
+    return result;
   }
+  // get the element type
+  function typeOfElement(element, strictComparison) {
+    let boolean = true;
+    if (strictComparison) {
+      boolean = !Array.isArray(element);
+    }
+    if (typeof element === "object" && element !== null && boolean) {
+      return "object";
+    } else if (Array.isArray(element)) {
+      return "array";
+    } else {
+      return "primitive";
+    }
+  }
+  // set infos
+  function setInfos(object, parent) {
+    for (const key in object) {
+      const element = object[key];
+      if (typeOfElement(element, false) === "object") {
+        element["parent"] = parent;
+        element["type"] = typeOfElement(element, true);
+        element["key"] = key;
+      }
+    }
+  }
+  function main(object) {
+    if (i === 1) {
+      setInfos(object, 1);
+      tree["1"] = {
+        1.1: {
+          values: getDataType(object, "primitive"),
+        },
+      };
+      i++;
+      object = getDataType(object, "object");
+    }
+    if (object) {
+      let obj2 = {};
+      tree[i] = {};
+      for (const key in object) {
+        const ij = i + "." + j;
+        const element = object[key];
+        if (getDataType(element, "object")) {
+          const helper = getDataType(element, "object");
+          for (const key1 in helper) {
+            const ele = helper[key];
+            [obj2[key1]] = Object.values(helper);
+          }
+        }
+        let values;
+        if (typeOfElement(element, true) === "array") {
+          values = {
+            ...getDataType(element, "primitive"),
+            ...getDataType(element, "object"),
+          };
+        } else {
+          values = getDataType(element, "primitive");
+        }
+        setInfos(element, ij);
+        tree[i][ij] = {
+          parent: element.parent,
+          key: key,
+          values: values,
+        };
+        j++;
+      }
+      j = 1;
+      i++;
+      if (Object.values(obj2).length) main(obj2);
+    }
+  }
+  const tree = {};
+  let i = 1;
+  let j = 1;
+  main(object);
+  return tree;
 }
 
-
-function LoopThoughtObjects(objectOfObjects,parentName = 'firstLayer') {
-  //create layer
-  if(!document.getElementById(parentName)) {
-    const layer = document.createElement('div');
-    layer.classList.add('layer');
-    layer.setAttribute('id',parentName)
-    main.appendChild(layer);
-  }
-  //fill layer
-  for(const key in objectOfObjects) {
-    //create subLayer
-    console.log(parentName+ ' -----> ',objectOfObjects);
-    
-  }
+function treeTOhtml(tree) {
+  console.log(tree);
 }
 
-
-
-// const obj = {
-//  1: {
-//  1.1: {
-//  values: { employeeName: "John Doe", employeeId: 27, good: "good" },
-//  },
-//  },
-//  2: {
-//  2.1: {
-//  parent: 1,
-//  key: "salary",
-//  values: { junary: "400000INR", fibrary: "500000INR", march: "650000INR" },
-//  },
-//  2.2: {
-//  parent: 1,
-//  key: "interest",
-//  // ---- if isArray(element) take all elements and display it -----
-//  values: ["crossfit", "english", { movies: "superman", animes: "boruto" }],
-//  },
-//  2.3: {
-//  parent: 1,
-//  key: "address",
-//  values: { city: "Mumbai", state: "Maharashtra", country: "India" },
-//  },
-//  },
-//  3: {
-//  3.1: {
-//  parent: 2.3,
-//  key: "locality",
-//  values: { address1: "1600 pebble road", address2: "Nearby XYZ Bank" },
-//  },
-//  },
-//  };
+//loop through tree and create layer each time
+// loop through sublayers and create div and append it to it's layer
+// loop inside sublayers and for each one create node (key:example) and append it to sublayer
+//create ctn for values and append it to sublayer
+//loop again through values and for each one create paragraph and append it to ctn

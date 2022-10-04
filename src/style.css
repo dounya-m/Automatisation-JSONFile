@@ -10,6 +10,12 @@
 .object-parent-circle {
  @apply w-12 h-12 bg-slate-200 rounded-full inline-block border border-gray-100;
 }
-.layer {
+.layerEl {
  @apply flex flex-col;
+}
+.subLayerEl {
+ @apply w-full;
+}
+.node {
+ @apply flex items-center justify-center text-center bg-slate-600 text-gray-100 rounded m-3 px-3 py-2;
 }
