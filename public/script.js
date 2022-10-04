@@ -87,6 +87,7 @@ function LoopThoughtObjects(objectOfObjects,parentName = 'firstLayer') {
   for(const key in objectOfObjects) {
     //create subLayer
     console.log(parentName+ ' -----> ',objectOfObjects);
+    
   }
 }
 
